@@ -2,9 +2,37 @@
 
 Aplicación web SPA desarrollada con React + Vite para organizar el catálogo de libros de un colegio de Huancayo. El proyecto cumple con la guía práctica **Semana 07 – 2.ª parte** de la asignatura *Desarrollo de Aplicaciones Web (IS093A)* de la UNCP.
 
-> **Nota:** los libros incluidos son datos demostrativos. No representan el inventario real del colegio PRAXIS.
+## Evidencias de validación
 
----
+### Captura 1 — Ejecución de la aplicación
+![Captura 1](evidencias/captura1.png)
+La app se ejecuta con `npm run dev` sin errores en consola.
+
+### Captura 2 — ESLint sin advertencias
+![Captura 2](evidencias/captura-2.png)
+Después de corregir las dependencias de los `useCallback`, `npm run lint` no muestra warnings.
+
+### Captura 3 — React DevTools Profiler
+![Captura 3](evidencias/captura3.png)
+Grabé el cambio de disponibilidad de un libro. Solo se re-renderiza la tarjeta modificada.
+
+### Captura 4 — Limpieza de efectos
+![Captura 4](evidencias/captura4.png)
+Consola mostrando los pares "listener AGREGADO" / "listener REMOVIDO".
+
+### Captura 5 — Tema claro y oscuro
+![Captura 5a](evidencias/captura5.png)
+![Captura 5b](evidencias/captura6.png)
+El tema cambia desde el botón del header y persiste al recargar.
+
+### Captura 6 — Persistencia en localStorage
+![Captura 6](evidencias/captura7.png)
+Local Storage con las claves `praxis-books` y `praxis-theme`.
+
+
+### Captura 8 — Búsqueda y filtros
+![Captura 8](evidencias/captura8.png)
+Búsqueda combinada con filtros de categoría, disponibilidad y orden.
 
 ## 1. Objetivo
 

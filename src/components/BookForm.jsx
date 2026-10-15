@@ -24,14 +24,17 @@ export default function BookForm({ initialBook, onSubmit, onClose }) {
   }, [])
 
   // Esc para cerrar (con limpieza del listener)
-  useEffect(() => {
+    useEffect(() => {
     const handleKey = (e) => {
-      if (e.key === 'Escape') onClose()
+        if (e.key === 'Escape') onClose()
     }
+    console.log('[BookForm] listener AGREGADO')
     window.addEventListener('keydown', handleKey)
-    return () => window.removeEventListener('keydown', handleKey)
-  }, [onClose])
-
+    return () => {
+        console.log('[BookForm] listener REMOVIDO')
+        window.removeEventListener('keydown', handleKey)
+    }
+}, [onClose])
   const handleChange = (field) => (e) => {
     setForm((prev) => ({ ...prev, [field]: e.target.value }))
   }
