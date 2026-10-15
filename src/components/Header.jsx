@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { BookPlus, Search } from 'lucide-react'
 import ThemeToggle from './ThemeToggle'
 
-const LOGO_URL = 'https://www.praxispa.cl/wp-content/uploads/elementor/thumbs/logo-quqix5ifc6kn3hc7jqv4v0pzmz304kklw14a39h214.png'
+const LOGO_URL = 'https://cdn-icons-png.flaticon.com/512/29/29302.png'
 
 export default function Header({ search, onSearchChange, onAddBook }) {
   const [logoError, setLogoError] = useState(false)
