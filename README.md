@@ -291,42 +291,9 @@ Pasos para el estudiante:
    - `BookCard` con `React.memo` solo debe re-renderizarse para el libro afectado.
    - `App` sí se re-renderiza porque cambia el estado global; es esperado.
    - `Header`, `Sidebar`, `ThemeToggle`, `BookFilters` no reciben props que cambien al alternar disponibilidad, por lo que pueden evitar renders si se memoizan (opcional).
-5. Anotar resultados reales aquí:
+5. Resultados de las capturas mostradas:
 
-```text
-[completar] Captura del Profiler tras cambiar la disponibilidad de un libro.
-[completar] Componentes que se re-renderizaron y por qué.
-[completar] Componentes que se evitaron con React.memo.
-```
-
-> No se declaran mejoras porcentuales si no se han medido.
-
----
-
-## 14. Pruebas funcionales
-
-Marcar cada una tras ejecutarla:
-
-- [ ] `npm run dev` arranca sin errores en consola.
-- [ ] Se ven los 6 libros de ejemplo en la primera carga.
-- [ ] Agregar un libro: abre el modal, el foco cae en "Título".
-- [ ] Guardar: aparece en la grilla.
-- [ ] Validación: título, autor y categoría obligatorios muestran error.
-- [ ] Escape cierra el modal sin guardar.
-- [ ] Editar un libro: se abre el modal con los datos cargados.
-- [ ] Eliminar un libro: desaparece de la lista.
-- [ ] Marcar como prestado y devolver: el badge cambia.
-- [ ] Buscar por título y por autor.
-- [ ] Combinar filtro de categoría + disponibilidad + orden ascendente/descendente.
-- [ ] Cambiar tema y comprobar que se aplica a toda la interfaz.
-- [ ] Recargar: libros y tema se conservan.
-- [ ] Vista móvil (≤ 720 px): sidebar apilado y grid a una columna.
-- [ ] `npm run lint` sin errores ni warnings.
-
----
-
-## 15. Evidencias sugeridas
-
+#
 Adjuntar capturas reales (no ilustrativas) de:
 
 1. Aplicación funcionando en escritorio.
@@ -338,17 +305,3 @@ Adjuntar capturas reales (no ilustrativas) de:
 7. React DevTools Profiler.
 8. Consola limpia al abrir/cerrar el modal (limpieza de `useEffect`).
 
-```text
-[completar] Captura 1: …
-[completar] Captura 2: …
-```
-
----
-
-## 16. Sobre la entrega
-
-- Este proyecto no ha sido subido a GitHub ni a ADESA por parte del asistente.
-- El estudiante debe:
-  1. Inicializar el repositorio y subirlo a GitHub.
-  2. Comprimir el proyecto en ZIP.
-  3. Comprimir el proyecto en RAR para ADESA.
