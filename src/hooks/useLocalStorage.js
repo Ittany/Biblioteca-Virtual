@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from 'react'
  * @returns {[*, Function]} [valor, setValor] similar a useState.
  */
 export function useLocalStorage(key, initialValue) {
-  // si falla el parseo o no hay dato, se usa el valor inicial.
+  // Lectura inicial segura: si falla el parseo o no hay dato, se usa el valor inicial.
   const readValue = useCallback(() => {
     if (typeof window === 'undefined') return initialValue
     try {
@@ -30,15 +30,9 @@ export function useLocalStorage(key, initialValue) {
   }, [key, storedValue])
 
   // Actualizador compatible con useState (valor directo o función).
-  const setValue = useCallback(
-    (value) => {
-      setStoredValue((prev) => {
-        const next = value instanceof Function ? value(prev) : value
-        return next
-      })
-    },
-    [],
-  )
+  const setValue = useCallback((value) => {
+    setStoredValue((prev) => (value instanceof Function ? value(prev) : value))
+  }, [])
 
   return [storedValue, setValue]
 }

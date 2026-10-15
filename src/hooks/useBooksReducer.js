@@ -1,17 +1,23 @@
 import { useReducer } from 'react'
 
+/**
+ * Estado inicial del catálogo.
+ */
 export const initialBooksState = {
   books: [],
   filters: {
     category: 'todas',
-    status: 'todos', // 'todos'  'disponible' 'prestado'
+    status: 'todos', // 'todos' | 'disponible' | 'prestado'
   },
   sort: {
-    by: 'titulo', // 'titulo' 'anio'
-    direction: 'asc', // 'asc' 'desc'
+    by: 'titulo', // 'titulo' | 'anio'
+    direction: 'asc', // 'asc' | 'desc'
   },
 }
 
+/**
+ * Tipos de acciones del reducer.
+ */
 export const BOOKS_ACTIONS = {
   INIT_BOOKS: 'INIT_BOOKS',
   ADD_BOOK: 'ADD_BOOK',
@@ -24,6 +30,9 @@ export const BOOKS_ACTIONS = {
   RESET_FILTERS: 'RESET_FILTERS',
 }
 
+/**
+ * Reducer puro del catálogo de libros.
+ */
 export function booksReducer(state, action) {
   switch (action.type) {
     case BOOKS_ACTIONS.INIT_BOOKS:
@@ -94,8 +103,28 @@ export function booksReducer(state, action) {
   }
 }
 
-/* Hook que expone el reducer junto con la función dispatch.*/
-export function useBooksReducer(initialState = initialBooksState) {
-  const [state, dispatch] = useReducer(booksReducer, initialState)
+/**
+ * Hook que expone el reducer junto con dispatch.
+ * - initialState: estado base (por defecto, initialBooksState).
+ * - init: función inicializadora perezosa que recibe initialState
+ *         y devuelve el estado real del primer render.
+ */
+export function useBooksReducer(initialState = initialBooksState, init) {
+  const [state, dispatch] = useReducer(booksReducer, initialState, init)
   return { state, dispatch }
+}
+
+/**
+ * Lee los libros persistidos en localStorage.
+ * Devuelve null si no hay nada válido guardado.
+ */
+export function loadBooksFromStorage(key = 'praxis-books') {
+  try {
+    const raw = localStorage.getItem(key)
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : null
+  } catch {
+    return null
+  }
 }

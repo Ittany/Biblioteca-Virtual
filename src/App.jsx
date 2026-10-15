@@ -5,8 +5,11 @@ import StatsCards from './components/StatsCards'
 import BookCard from './components/BookCard'
 import BookForm from './components/BookForm'
 import BookFilters from './components/BookFilters'
-import { useBooksReducer, BOOKS_ACTIONS } from './hooks/useBooksReducer'
-import { useLocalStorage } from './hooks/useLocalStorage'
+import {
+  useBooksReducer,
+  BOOKS_ACTIONS,
+  loadBooksFromStorage,
+} from './hooks/useBooksReducer'
 
 const SAMPLE_BOOKS = [
   {
@@ -74,11 +77,16 @@ const SAMPLE_BOOKS = [
 const BOOKS_STORAGE_KEY = 'praxis-books'
 
 export default function App() {
-  // Persistencia de libros con hook personalizado
-  const [storedBooks, setStoredBooks] = useLocalStorage(BOOKS_STORAGE_KEY, null)
-
-  // Estado global del catálogo
-  const { state, dispatch } = useBooksReducer()
+  // Estado global del catálogo. La función inicializadora lee localStorage
+  // una sola vez, sin useEffect ni eslint-disable.
+  const { state, dispatch } = useBooksReducer(undefined, () => {
+    const saved = loadBooksFromStorage(BOOKS_STORAGE_KEY)
+    return {
+      books: saved && saved.length > 0 ? saved : SAMPLE_BOOKS,
+      filters: { category: 'todas', status: 'todos' },
+      sort: { by: 'titulo', direction: 'asc' },
+    }
+  })
 
   // UI local
   const [search, setSearch] = useState('')
@@ -86,24 +94,14 @@ export default function App() {
   const [formOpen, setFormOpen] = useState(false)
   const [editingBook, setEditingBook] = useState(null)
 
-  // Carga inicial: si no hay nada guardado, usar los libros de ejemplo.
+  // Persistencia de libros.
   useEffect(() => {
-    if (storedBooks && storedBooks.length > 0) {
-      dispatch({ type: BOOKS_ACTIONS.INIT_BOOKS, payload: storedBooks })
-    } else {
-      dispatch({ type: BOOKS_ACTIONS.INIT_BOOKS, payload: SAMPLE_BOOKS })
-      setStoredBooks(SAMPLE_BOOKS)
+    try {
+      localStorage.setItem(BOOKS_STORAGE_KEY, JSON.stringify(state.books))
+    } catch (error) {
+      console.warn('No se pudieron guardar los libros', error)
     }
-    // Solo al montar
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  // Sincroniza libros con localStorage cada vez que cambian.
-  useEffect(() => {
-    if (state.books.length > 0) {
-      setStoredBooks(state.books)
-    }
-  }, [state.books, setStoredBooks])
+  }, [state.books])
 
   // Categorías derivadas
   const categories = useMemo(() => {
@@ -191,41 +189,28 @@ export default function App() {
     } else if (id === 'prestados') {
       dispatch({ type: BOOKS_ACTIONS.SET_STATUS_FILTER, payload: 'prestado' })
     } else {
-      dispatch({ type: BOOKS_ACTIONS.SET_STATUS_FILTER, payload: 'todos' })
+      dispatch({ type: BOOKS_ACTIONS.RESET_FILTERS })
     }
     if (id === 'inicio') {
-      dispatch({ type: BOOKS_ACTIONS.RESET_FILTERS })
       setSearch('')
     }
   }, [])
 
-  const handleCategoryChange = useCallback(
-    (category) => {
-      dispatch({ type: BOOKS_ACTIONS.SET_CATEGORY_FILTER, payload: category })
-    },
-    [],
-  )
+  const handleCategoryChange = useCallback((category) => {
+    dispatch({ type: BOOKS_ACTIONS.SET_CATEGORY_FILTER, payload: category })
+  }, [])
 
-  const handleStatusChange = useCallback(
-    (status) => {
-      dispatch({ type: BOOKS_ACTIONS.SET_STATUS_FILTER, payload: status })
-    },
-    [],
-  )
+  const handleStatusChange = useCallback((status) => {
+    dispatch({ type: BOOKS_ACTIONS.SET_STATUS_FILTER, payload: status })
+  }, [])
 
-  const handleSortByChange = useCallback(
-    (by) => {
-      dispatch({ type: BOOKS_ACTIONS.SET_SORT, payload: { by } })
-    },
-    [],
-  )
+  const handleSortByChange = useCallback((by) => {
+    dispatch({ type: BOOKS_ACTIONS.SET_SORT, payload: { by } })
+  }, [])
 
-  const handleDirectionChange = useCallback(
-    (direction) => {
-      dispatch({ type: BOOKS_ACTIONS.SET_SORT, payload: { direction } })
-    },
-    [],
-  )
+  const handleDirectionChange = useCallback((direction) => {
+    dispatch({ type: BOOKS_ACTIONS.SET_SORT, payload: { direction } })
+  }, [])
 
   return (
     <div className="app">
