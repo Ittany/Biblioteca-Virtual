@@ -282,7 +282,6 @@ Verificación manual de limpieza:
 
 ## 13. Validación de rendimiento con React DevTools Profiler
 
-Pasos para el estudiante:
 
 1. Instalar [React Developer Tools](https://react.dev/learn/react-developer-tools).
 2. Abrir la app en modo dev (`npm run dev`).
@@ -291,17 +290,6 @@ Pasos para el estudiante:
    - `BookCard` con `React.memo` solo debe re-renderizarse para el libro afectado.
    - `App` sí se re-renderiza porque cambia el estado global; es esperado.
    - `Header`, `Sidebar`, `ThemeToggle`, `BookFilters` no reciben props que cambien al alternar disponibilidad, por lo que pueden evitar renders si se memoizan (opcional).
-5. Resultados de las capturas mostradas:
+
 
 #
-Adjuntar capturas reales (no ilustrativas) de:
-
-1. Aplicación funcionando en escritorio.
-2. Registro de un libro.
-3. Búsqueda + filtros combinados.
-4. Tema claro y oscuro.
-5. Persistencia tras recargar la página.
-6. Salida de `npm run lint`.
-7. React DevTools Profiler.
-8. Consola limpia al abrir/cerrar el modal (limpieza de `useEffect`).
-
