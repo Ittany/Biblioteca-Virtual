@@ -1,8 +1,290 @@
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import Header from './components/Header'
+import Sidebar from './components/Sidebar'
+import StatsCards from './components/StatsCards'
+import BookCard from './components/BookCard'
+import BookForm from './components/BookForm'
+import BookFilters from './components/BookFilters'
+import { useBooksReducer, BOOKS_ACTIONS } from './hooks/useBooksReducer'
+import { useLocalStorage } from './hooks/useLocalStorage'
+
+const SAMPLE_BOOKS = [
+  {
+    id: 'b1',
+    title: 'Don Quijote de la Mancha',
+    author: 'Miguel de Cervantes',
+    category: 'Novela',
+    year: 1605,
+    description: 'Clásico de la literatura española.',
+    cover: '',
+    status: 'disponible',
+  },
+  {
+    id: 'b2',
+    title: 'El principito',
+    author: 'Antoine de Saint-Exupéry',
+    category: 'Infantil',
+    year: 1943,
+    description: 'Relato poético sobre la amistad y la vida.',
+    cover: '',
+    status: 'prestado',
+  },
+  {
+    id: 'b3',
+    title: 'Cien años de soledad',
+    author: 'Gabriel García Márquez',
+    category: 'Novela',
+    year: 1967,
+    description: 'Obra cumbre del realismo mágico.',
+    cover: '',
+    status: 'disponible',
+  },
+  {
+    id: 'b4',
+    title: 'La ciudad y los perros',
+    author: 'Mario Vargas Llosa',
+    category: 'Novela',
+    year: 1963,
+    description: 'Novela ambientada en un colegio militar.',
+    cover: '',
+    status: 'disponible',
+  },
+  {
+    id: 'b5',
+    title: 'Alicia en el país de las maravillas',
+    author: 'Lewis Carroll',
+    category: 'Infantil',
+    year: 1865,
+    description: 'Aventuras fantásticas de Alicia.',
+    cover: '',
+    status: 'prestado',
+  },
+  {
+    id: 'b6',
+    title: 'El diario de Ana Frank',
+    author: 'Ana Frank',
+    category: 'Biografía',
+    year: 1947,
+    description: 'Diario escrito durante la Segunda Guerra Mundial.',
+    cover: '',
+    status: 'disponible',
+  },
+]
+
+const BOOKS_STORAGE_KEY = 'praxis-books'
+
 export default function App() {
+  // Persistencia de libros con hook personalizado
+  const [storedBooks, setStoredBooks] = useLocalStorage(BOOKS_STORAGE_KEY, null)
+
+  // Estado global del catálogo
+  const { state, dispatch } = useBooksReducer()
+
+  // UI local
+  const [search, setSearch] = useState('')
+  const [activeNav, setActiveNav] = useState('inicio')
+  const [formOpen, setFormOpen] = useState(false)
+  const [editingBook, setEditingBook] = useState(null)
+
+  // Carga inicial: si no hay nada guardado, usar los libros de ejemplo.
+  useEffect(() => {
+    if (storedBooks && storedBooks.length > 0) {
+      dispatch({ type: BOOKS_ACTIONS.INIT_BOOKS, payload: storedBooks })
+    } else {
+      dispatch({ type: BOOKS_ACTIONS.INIT_BOOKS, payload: SAMPLE_BOOKS })
+      setStoredBooks(SAMPLE_BOOKS)
+    }
+    // Solo al montar
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Sincroniza libros con localStorage cada vez que cambian.
+  useEffect(() => {
+    if (state.books.length > 0) {
+      setStoredBooks(state.books)
+    }
+  }, [state.books, setStoredBooks])
+
+  // Categorías derivadas
+  const categories = useMemo(() => {
+    const set = new Set(state.books.map((b) => b.category))
+    return Array.from(set).sort((a, b) => a.localeCompare(b))
+  }, [state.books])
+
+  // Lista visible según búsqueda + filtros + ordenamiento
+  const visibleBooks = useMemo(() => {
+    const term = search.trim().toLowerCase()
+    const { category, status } = state.filters
+    const { by, direction } = state.sort
+
+    let result = state.books.filter((b) => {
+      const matchesTerm =
+        !term ||
+        b.title.toLowerCase().includes(term) ||
+        b.author.toLowerCase().includes(term)
+      const matchesCategory = category === 'todas' || b.category === category
+      const matchesStatus = status === 'todos' || b.status === status
+      return matchesTerm && matchesCategory && matchesStatus
+    })
+
+    result = [...result].sort((a, b) => {
+      let cmp = 0
+      if (by === 'titulo') {
+        cmp = a.title.localeCompare(b.title)
+      } else if (by === 'anio') {
+        cmp = (a.year ?? 0) - (b.year ?? 0)
+      }
+      return direction === 'asc' ? cmp : -cmp
+    })
+
+    return result
+  }, [state.books, state.filters, state.sort, search])
+
+  // Estadísticas derivadas
+  const stats = useMemo(() => {
+    const total = state.books.length
+    const available = state.books.filter((b) => b.status === 'disponible').length
+    const borrowed = total - available
+    return { total, available, borrowed, categories: categories.length }
+  }, [state.books, categories])
+
+  // Manejadores memorizados
+  const handleAddBook = useCallback(() => {
+    setEditingBook(null)
+    setFormOpen(true)
+  }, [])
+
+  const handleEditBook = useCallback((book) => {
+    setEditingBook(book)
+    setFormOpen(true)
+  }, [])
+
+  const handleCloseForm = useCallback(() => {
+    setFormOpen(false)
+    setEditingBook(null)
+  }, [])
+
+  const handleSubmitBook = useCallback(
+    (book) => {
+      if (editingBook) {
+        dispatch({ type: BOOKS_ACTIONS.UPDATE_BOOK, payload: book })
+      } else {
+        dispatch({ type: BOOKS_ACTIONS.ADD_BOOK, payload: book })
+      }
+      handleCloseForm()
+    },
+    [editingBook, handleCloseForm],
+  )
+
+  const handleRemoveBook = useCallback((id) => {
+    dispatch({ type: BOOKS_ACTIONS.REMOVE_BOOK, payload: id })
+  }, [])
+
+  const handleToggleStatus = useCallback((id) => {
+    dispatch({ type: BOOKS_ACTIONS.TOGGLE_AVAILABILITY, payload: id })
+  }, [])
+
+  const handleNavChange = useCallback((id) => {
+    setActiveNav(id)
+    if (id === 'disponibles') {
+      dispatch({ type: BOOKS_ACTIONS.SET_STATUS_FILTER, payload: 'disponible' })
+    } else if (id === 'prestados') {
+      dispatch({ type: BOOKS_ACTIONS.SET_STATUS_FILTER, payload: 'prestado' })
+    } else {
+      dispatch({ type: BOOKS_ACTIONS.SET_STATUS_FILTER, payload: 'todos' })
+    }
+    if (id === 'inicio') {
+      dispatch({ type: BOOKS_ACTIONS.RESET_FILTERS })
+      setSearch('')
+    }
+  }, [])
+
+  const handleCategoryChange = useCallback(
+    (category) => {
+      dispatch({ type: BOOKS_ACTIONS.SET_CATEGORY_FILTER, payload: category })
+    },
+    [],
+  )
+
+  const handleStatusChange = useCallback(
+    (status) => {
+      dispatch({ type: BOOKS_ACTIONS.SET_STATUS_FILTER, payload: status })
+    },
+    [],
+  )
+
+  const handleSortByChange = useCallback(
+    (by) => {
+      dispatch({ type: BOOKS_ACTIONS.SET_SORT, payload: { by } })
+    },
+    [],
+  )
+
+  const handleDirectionChange = useCallback(
+    (direction) => {
+      dispatch({ type: BOOKS_ACTIONS.SET_SORT, payload: { direction } })
+    },
+    [],
+  )
+
   return (
     <div className="app">
-      <h1>Biblioteca Virtual PRAXIS</h1>
-      <p>Estructura base lista. Siguiente paso: reducer del catálogo.</p>
+      <Header
+        search={search}
+        onSearchChange={setSearch}
+        onAddBook={handleAddBook}
+      />
+
+      <div className="layout">
+        <Sidebar active={activeNav} onChange={handleNavChange} />
+
+        <main className="content">
+          <StatsCards
+            total={stats.total}
+            available={stats.available}
+            borrowed={stats.borrowed}
+            categories={stats.categories}
+          />
+
+          <BookFilters
+            categories={categories}
+            category={state.filters.category}
+            onCategoryChange={handleCategoryChange}
+            status={state.filters.status}
+            onStatusChange={handleStatusChange}
+            sortBy={state.sort.by}
+            onSortByChange={handleSortByChange}
+            direction={state.sort.direction}
+            onDirectionChange={handleDirectionChange}
+          />
+
+          {visibleBooks.length === 0 ? (
+            <div className="empty-state">
+              <p>No se encontraron libros con esos criterios.</p>
+            </div>
+          ) : (
+            <section className="books-grid">
+              {visibleBooks.map((book) => (
+                <BookCard
+                  key={book.id}
+                  book={book}
+                  onToggleStatus={handleToggleStatus}
+                  onRemove={handleRemoveBook}
+                  onEdit={handleEditBook}
+                />
+              ))}
+            </section>
+          )}
+        </main>
+      </div>
+
+      {formOpen && (
+        <BookForm
+          initialBook={editingBook}
+          onSubmit={handleSubmitBook}
+          onClose={handleCloseForm}
+        />
+      )}
     </div>
   )
 }
