@@ -9,7 +9,7 @@ Aplicación web SPA desarrollada con React + Vite para organizar el catálogo de
 La app se ejecuta con `npm run dev` sin errores en consola.
 
 ### Captura 2 — ESLint sin advertencias
-![Captura 2](evidencias/captura-2.png)
+![Captura 2](evidencias/captura2.png)
 Después de corregir las dependencias de los `useCallback`, `npm run lint` no muestra warnings.
 
 ### Captura 3 — React DevTools Profiler
