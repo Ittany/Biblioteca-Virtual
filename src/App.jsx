@@ -77,8 +77,6 @@ const SAMPLE_BOOKS = [
 const BOOKS_STORAGE_KEY = 'praxis-books'
 
 export default function App() {
-  // Estado global del catálogo. La función inicializadora lee localStorage
-  // una sola vez, sin useEffect ni eslint-disable.
   const { state, dispatch } = useBooksReducer(undefined, () => {
     const saved = loadBooksFromStorage(BOOKS_STORAGE_KEY)
     return {
@@ -88,13 +86,11 @@ export default function App() {
     }
   })
 
-  // UI local
   const [search, setSearch] = useState('')
   const [activeNav, setActiveNav] = useState('inicio')
   const [formOpen, setFormOpen] = useState(false)
   const [editingBook, setEditingBook] = useState(null)
 
-  // Persistencia de libros.
   useEffect(() => {
     try {
       localStorage.setItem(BOOKS_STORAGE_KEY, JSON.stringify(state.books))
@@ -103,13 +99,11 @@ export default function App() {
     }
   }, [state.books])
 
-  // Categorías derivadas
   const categories = useMemo(() => {
     const set = new Set(state.books.map((b) => b.category))
     return Array.from(set).sort((a, b) => a.localeCompare(b))
   }, [state.books])
 
-  // Lista visible según búsqueda + filtros + ordenamiento
   const visibleBooks = useMemo(() => {
     const term = search.trim().toLowerCase()
     const { category, status } = state.filters
@@ -138,7 +132,6 @@ export default function App() {
     return result
   }, [state.books, state.filters, state.sort, search])
 
-  // Estadísticas derivadas
   const stats = useMemo(() => {
     const total = state.books.length
     const available = state.books.filter((b) => b.status === 'disponible').length
@@ -146,7 +139,6 @@ export default function App() {
     return { total, available, borrowed, categories: categories.length }
   }, [state.books, categories])
 
-  // Manejadores memorizados
   const handleAddBook = useCallback(() => {
     setEditingBook(null)
     setFormOpen(true)
@@ -171,46 +163,73 @@ export default function App() {
       }
       handleCloseForm()
     },
-    [editingBook, handleCloseForm],
+    [editingBook, handleCloseForm, dispatch],
   )
 
-  const handleRemoveBook = useCallback((id) => {
-    dispatch({ type: BOOKS_ACTIONS.REMOVE_BOOK, payload: id })
-  }, [])
+  const handleRemoveBook = useCallback(
+    (id) => {
+      dispatch({ type: BOOKS_ACTIONS.REMOVE_BOOK, payload: id })
+    },
+    [dispatch],
+  )
 
-  const handleToggleStatus = useCallback((id) => {
-    dispatch({ type: BOOKS_ACTIONS.TOGGLE_AVAILABILITY, payload: id })
-  }, [])
+  const handleToggleStatus = useCallback(
+    (id) => {
+      dispatch({ type: BOOKS_ACTIONS.TOGGLE_AVAILABILITY, payload: id })
+    },
+    [dispatch],
+  )
 
-  const handleNavChange = useCallback((id) => {
-    setActiveNav(id)
-    if (id === 'disponibles') {
-      dispatch({ type: BOOKS_ACTIONS.SET_STATUS_FILTER, payload: 'disponible' })
-    } else if (id === 'prestados') {
-      dispatch({ type: BOOKS_ACTIONS.SET_STATUS_FILTER, payload: 'prestado' })
-    } else {
-      dispatch({ type: BOOKS_ACTIONS.RESET_FILTERS })
-    }
-    if (id === 'inicio') {
-      setSearch('')
-    }
-  }, [])
+  const handleNavChange = useCallback(
+    (id) => {
+      setActiveNav(id)
+      if (id === 'disponibles') {
+        dispatch({
+          type: BOOKS_ACTIONS.SET_STATUS_FILTER,
+          payload: 'disponible',
+        })
+      } else if (id === 'prestados') {
+        dispatch({
+          type: BOOKS_ACTIONS.SET_STATUS_FILTER,
+          payload: 'prestado',
+        })
+      } else {
+        dispatch({ type: BOOKS_ACTIONS.RESET_FILTERS })
+      }
+      if (id === 'inicio') {
+        setSearch('')
+      }
+    },
+    [dispatch],
+  )
 
-  const handleCategoryChange = useCallback((category) => {
-    dispatch({ type: BOOKS_ACTIONS.SET_CATEGORY_FILTER, payload: category })
-  }, [])
+  const handleCategoryChange = useCallback(
+    (category) => {
+      dispatch({ type: BOOKS_ACTIONS.SET_CATEGORY_FILTER, payload: category })
+    },
+    [dispatch],
+  )
 
-  const handleStatusChange = useCallback((status) => {
-    dispatch({ type: BOOKS_ACTIONS.SET_STATUS_FILTER, payload: status })
-  }, [])
+  const handleStatusChange = useCallback(
+    (status) => {
+      dispatch({ type: BOOKS_ACTIONS.SET_STATUS_FILTER, payload: status })
+    },
+    [dispatch],
+  )
 
-  const handleSortByChange = useCallback((by) => {
-    dispatch({ type: BOOKS_ACTIONS.SET_SORT, payload: { by } })
-  }, [])
+  const handleSortByChange = useCallback(
+    (by) => {
+      dispatch({ type: BOOKS_ACTIONS.SET_SORT, payload: { by } })
+    },
+    [dispatch],
+  )
 
-  const handleDirectionChange = useCallback((direction) => {
-    dispatch({ type: BOOKS_ACTIONS.SET_SORT, payload: { direction } })
-  }, [])
+  const handleDirectionChange = useCallback(
+    (direction) => {
+      dispatch({ type: BOOKS_ACTIONS.SET_SORT, payload: { direction } })
+    },
+    [dispatch],
+  )
 
   return (
     <div className="app">
